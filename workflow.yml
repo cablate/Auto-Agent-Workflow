@@ -1,0 +1,78 @@
+# ===================================================================
+# 重要提示：此工作流必須嚴格按照順序執行。
+# 每一個步驟都依賴於前一個步驟的產出結果。
+# 請勿跳過任何步驟。
+# ===================================================================
+
+# 本次執行的專屬名稱，將用作資料夾名稱
+run_name: "關於規格"
+
+# 1. 工作流基本設定
+workflow_name: "Standard Content Creation"
+version: 1.2 # Updated version
+description: "一個從主題研究到產出最終稿的標準化內容流程，支援主題資料夾功能。"
+
+# 2. 待辦事項設定
+todo_generation:
+  enabled: true
+  prompt_file: ".workflow_prompts/00_create_todo_prompt.md"
+  output_file: ".outputs/{run_name}/todo.md"
+  template: |
+    # 內容產出待辦清單
+    - [ ] 步驟 3: 根據輸入進行研究，產出 `.outputs/{run_name}/original-data.md`
+    - [ ] 步驟 4: 審查 `.outputs/{run_name}/original-data.md`
+    - [ ] 步驟 5: 分析風格，產出或使用 `.memory/author-style-methodology.md`
+    - [ ] 步驟 6: 撰寫初稿 `.outputs/{run_name}/draft-1.md`
+    - [ ] 步驟 7: 審查初稿
+    - [ ] 步驟 8: 根據審查建議進行二修，產出 `.outputs/{run_name}/draft-2.md`
+    - [ ] 步驟 9: 進行二次審查
+    - [ ] 步驟 10: 產出最終完稿 `.outputs/{run_name}/final-article.md`
+
+
+# 3. 輸入與研究設定
+input_processing:
+  enabled: true
+  prompt_file: ".workflow_prompts/01_research_and_synthesis_prompt.md"
+  # type: "topic"
+  # market_research_required: true
+  type: "article_file"
+  source: "{run_name}.md"
+  output_file: ".outputs/{run_name}/original-data.md"
+
+# 4. 風格學習設定
+style_learning:
+  enabled: true
+  methodology_file: ".memory/author-style-methodology.md"
+  force_refresh: false
+  generation:
+    prompt_file: ".workflow_prompts/03_style_learning_prompt.md"
+    source_files:
+      - "_learning-data/**/*.md"
+
+# 5. 審查與草稿流程
+drafting_cycle:
+  review_original_data:
+    enabled: true
+    prompt_file: ".workflow_prompts/02_review_original_data_prompt.md"
+  draft_1:
+    enabled: true
+    prompt_file: ".workflow_prompts/04_first_draft_prompt.md"
+    output_file: ".outputs/{run_name}/draft-1.md"
+
+  review_draft_1:
+    enabled: true
+    prompt_file: ".workflow_prompts/05_review_first_draft_prompt.md"
+
+  revision_1:
+    enabled: true
+    prompt_file: ".workflow_prompts/06_revision_prompt.md"
+    output_file: ".outputs/{run_name}/draft-2.md"
+
+  review_draft_2:
+    enabled: true
+    prompt_file: ".workflow_prompts/07_review_second_draft_prompt.md"
+
+  finalization:
+    enabled: true
+    prompt_file: ".workflow_prompts/08_finalization_prompt.md"
+    output_file: ".complete/{run_name}.md"

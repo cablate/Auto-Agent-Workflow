@@ -1,0 +1,5 @@
+_learning_datas/**/*.md
+.complete/*.md
+.outputs/**/*.md
+.memory/*.md
+assets
