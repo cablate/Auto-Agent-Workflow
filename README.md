@@ -8,6 +8,8 @@
 
 本工作流的核心，是將複雜的文章產出過程拆解為 10 個清晰的步驟，並為每個步驟配備了專屬的 AI Agent Prompt。您（使用者）將扮演『**流程協調者 (Orchestrator)**』的角色，透過 AI 自動逐步執行每個任務，並審查中間產出，確保流程按照您的預期推進。
 
+---
+
 ## 使用須知
 
 1. 強烈建議您使用低成本的模型應用，例如 Gemini Cli (gemini-2.5-flash)，目前 flash 每日有 1000 次請求額度，而每一次的文章任務大約會使用 15-20 次不等。
@@ -17,13 +19,21 @@
 
 ## 如何開始?
 
-您可以選擇 `git clone` 或直接下載並解壓縮此專案，並於這個目錄啟用 `gemini --yolo -m "gemini-2.5-flash"`
-請注意，我們強烈不建議您使用寶貴的 `gemini-2.5-pro` 額度，但如果您沒有使用 pro 的習慣那麼也可以考慮。
+您可以選擇 `git clone` 或直接下載並解壓縮此專案，並於這個目錄啟用 `gemini --yolo -m "gemini-2.5-flash"` <br/>
+請注意，我們強烈不建議您使用寶貴的 `gemini-2.5-pro` 額度，但如果您沒有使用 pro 的習慣那麼也可以考慮。 <br/>
+
+您可以先將一些資訊寫入 md 並存放於根目錄 `ref.md`，並輸入以下提問啟動流程:
+``` bash
+# 其中最後的 "我希望xxx" 可以替換為任意需求
+@ref.md 請你將這份文件根據我們 workflow.yml 的流程完整走一次。我希望可以擴寫更多內容。
+```
 
 ## 事先警告
 
-由於本專案是 Agent 驅動，而不是以程式控制 workflow，模型具有隨機性，表現不符合預期是正常的，請確實下好提問、準備好您的參數設定。
-您可能會面臨一次任務需要手動介入的情況，您可以請 AI 從意外中斷或是你認為執行不完美的步驟開始接續執行。
+由於本專案是 Agent 驅動，而不是以程式控制 workflow，模型具有隨機性，表現不符合預期是正常的，請確實下好提問、準備好您的參數設定。<br/>
+您可能會面臨一次任務需要手動介入的情況，您可以請 AI 從意外中斷或是您認為執行不夠好的步驟開始接續執行。
+
+---
 
 ## 工作流程概覽
 
@@ -33,12 +43,14 @@
 2.  **生成待辦事項清單 (`.outputs/{run_name}/todo.md`)**
 3.  **處理輸入並產出原始資料 (`.outputs/{run_name}/original-data.md`)**
 4.  **審查原始資料 (`.outputs/{run_name}/reviews/review_original_data.md`)**
-5.  **學習作者文筆風格 (生成或讀取 `.outputs/{run_name}/style-methodology.md`)**
+5.  **學習作者文筆風格 (生成或讀取 `.memory/author-style-methodology.md`)**
 6.  **撰寫文章初稿 (`.outputs/{run_name}/drafts/draft-1.md`)**
 7.  **審查文章初稿 (`.outputs/{run_name}/reviews/review_draft_1.md`)**
 8.  **根據審查結果進行二修 (`.outputs/{run_name}/drafts/draft-2.md`)**
 9.  **進行二次審查 (`.outputs/{run_name}/reviews/review_draft_2.md`)**
 10. **產出最終完稿 (`.outputs/{run_name}/final/final-article.md`)**
+
+---
 
 ## 如何開始使用
 
@@ -49,7 +61,7 @@
 #### 關鍵配置項說明：
 
 *   **`run_name`**：
-    *   **用途**：定義本次執行任務的名稱。這個名稱將被用來建立一個專屬的資料夾 (`.outputs/{run_name}/`)，所有本次任務的產出檔案都將存放在這個資料夾中。請確保每次新任務都使用獨一無二的名稱，以避免檔案衝突。
+    *   **用途**：定義本次執行任務的名稱。這個名稱將被用來建立一個專屬的資料夾 (`.outputs/{run_name}/`)，所有本次任務的暫存檔案都將存放在這個資料夾中。請確保每次新任務都使用獨一無二的名稱，以避免檔案衝突。
     *   **範例**：`run_name: "關於規格文件的重要性"`
 
 *   **`input_processing`**：
@@ -79,7 +91,10 @@
 *   **`style_learning.force_refresh`**：
     *   **用途**：控制 `author-style-methodology.md` (您的文筆風格指南) 的生成行為。
     *   `true`：強制 AI 重新分析 `style_learning.generation.source_files` 中的所有過往個人創作集，並更新風格指南，這一步可能花費5~10分鐘。<br>
-    *   `false`：如果風格指南檔案已存在 (`.outputs/{run_name}/style-methodology.md`)，AI 將跳過重新分析，直接使用現有的指南。這能大幅節省 Token 並加速流程。<br>
+    *   `false`：如果風格指南檔案已存在 (`.memory/author-style-methodology.`)，AI 將跳過重新分析，直接使用現有的指南。這能大幅節省 Token 並加速流程。<br>
+
+*   **`style_learning.source_files`**：
+    *   **用途**：控制參考創作集的讀取範圍與路徑，可以使用正規表達式，或簡單以 `_learning_datas/**/*` 表示讀取所有底下的檔案。
 
 ### 2. 執行流程：與 AI 協同作業
 
@@ -116,8 +131,10 @@
         input_processing:
           type: "url"
           source: "https://example.com/a-long-article-about-ai"
-          market_research_required: false # <-- 設為 false 只會提煉，不擴寫
+          market_research_required: false # <-- 設為 false 不會進行主題研究
         ```
+
+---
 
 ## 產出檔案結構
 
@@ -134,6 +151,8 @@
     ├── draft-1.md              
     └── draft-2.md
 ```
+
+---
 
 ## 重要提示
 

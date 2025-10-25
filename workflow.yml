@@ -5,12 +5,12 @@
 # ===================================================================
 
 # 本次執行的專屬名稱，將用作資料夾名稱
-run_name: "關於規格"
+run_name: "example-article"
 
 # 1. 工作流基本設定
 workflow_name: "Standard Content Creation"
 version: 1.2 # Updated version
-description: "一個從主題研究到產出最終稿的標準化內容流程，支援主題資料夾功能。"
+description: "標準化內容流程"
 
 # 2. 待辦事項設定
 todo_generation:
