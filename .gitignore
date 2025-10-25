@@ -3,3 +3,7 @@ _learning_datas/**/*.md
 .outputs/**/*.md
 .memory/*.md
 assets
+
+# ignore root .md except README.md
+*.md
+!README.md
